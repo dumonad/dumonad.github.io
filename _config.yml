@@ -1,1 +1,4 @@
 theme: jekyll-theme-slate
+title: "Dumonad"
+github:
+  repository_url: https://github.com/dumonad/dumonad

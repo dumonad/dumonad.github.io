@@ -1,37 +1,55 @@
-## Welcome to GitHub Pages
+# Dumonad
 
-You can use the [editor on GitHub](https://github.com/dumonad/dumonad.github.io/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
+Dumonad is a solution to ease of using monad in Scala projects with introducing a set of extension methods.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+[KISS](https://en.wikipedia.org/wiki/KISS_principle) your code with Dumonad!
 
-### Markdown
+Reactive programming become more and more popular nowadays. A common response of a reactive call is a nested monad(
+i.e `Future[Either[L,R]]` or `Future[Option[T]]`)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+All scala developers know what are `map`, `flatmap`, and `flatten`
 
-```markdown
-Syntax highlighted code block
+The shortest way of chaining two `FutureEither` using standard Scala API will be something like this:
 
-# Header 1
-## Header 2
-### Header 3
+```scala
 
-- Bulleted
-- List
+def firstCall: Future[Either[String, String]]
+def secondCall(param: String): Future[Either[String, String]]
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+val result: Future[Either[String, String]] = firstCall.flatMap {
+  case Right(value) => secondCall(value)
+  case left => Future.successful(left)
+}
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+While using Dumonad it will be easier empowered with `dumap`:
 
-### Jekyll Themes
+```scala
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/dumonad/dumonad.github.io/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+def firstCall: Future[Either[String, String]]
+def secondCall(param: String): Future[Either[String, String]]
 
-### Support or Contact
+val result: Future[Either[String, String]] = firstCall.dumap(secondCall)
+```
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+Another thing is changing the order of monad wrappers.  
+Developers usually use boilerplate codes to do this. For example:
+
+```scala
+
+val optionOfFuture: Option[Future[String]]
+
+val futureOfOption: Future[Option[String]] = optionOfFuture match {
+  case Some(future) => future.map(Some(_))
+  case _ => Future.successful(None)
+}
+```
+
+With `dummed` method it will be a piece of cake, because **in Dumonad `Future` is always the outer wrapper.**
+
+```scala
+
+val optionOfFuture: Option[Future[String]]
+
+val futureOfOption: Future[Option[String]] = optionOfFuture.dummed
+```
